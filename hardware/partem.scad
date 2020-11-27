@@ -9,6 +9,7 @@ wall = 1.6;
 function uniform_product( a, b) = [ a[0] * b[0], a[1] * b[1], a[2] * b[2]];
 function up(a,b) = uniform_product( a,b);
 
+// a simple model of an RJ-12 connector
 module connector()
 {
     cutout_dims = [4.1,  1.5, connector_dims[2]] - [loss, loss, 0] +  [d, d, 2*d];
@@ -22,6 +23,7 @@ module connector()
     }
 }
 
+// A frame that will hold an RJ-12 connector.
 cube_dims = [13, 18, 20];
 module connector_frame()
 {
@@ -33,7 +35,7 @@ module connector_frame()
     }
 }
 
-// a cube with rounded corners
+// a cube with rounded (spherical) corners
 module roundedcube( dimensions, r)
 {
     rs = [r,r,r];
@@ -45,6 +47,7 @@ module roundedcube( dimensions, r)
                 translate( up( inner, [x, y, z])) sphere( r = r, $fn = 20);
 }
 
+// a flat cube with rounded (cylindrical) corners.
 module flatroundedcube( dimensions, r)
 {
     rs = [r,r,0];
@@ -56,9 +59,11 @@ module flatroundedcube( dimensions, r)
 }
 
 
+// The general shape of the enclosure
+// This module takes a boolean that tells it to generate either the 
+// bottom- or top half of the enclosure.
 walls = [wall, wall, wall];
 outer_dims = enclosure_dims + 2*walls;
-
 module enclosure_hull( bottom=true)
 {
     gland_depth = 4;
@@ -67,7 +72,7 @@ module enclosure_hull( bottom=true)
     {
         union() {
         
-            // enclosure proper
+            // enclosure proper: hollow cube
             difference() {
                 roundedcube( outer_dims+[0,0,.1], 3);
                 flatroundedcube( enclosure_dims, 3);
@@ -101,7 +106,7 @@ module tab( expand = false)
     hook = .8 + (expand?.2:0);
     
     translate( up( tab_dim, [-1, -.5, -.5])) cube( tab_dim + [ inset, 0, 0]);
-    translate([0,0, -tab_dim[2]/2 + wall + hook]) 
+    translate([0,0, -tab_dim[2]/2 + wall + hook - (expand?0:.1)]) 
         rotate([90,0,0]) 
             cylinder( r = hook, h = tab_dim[1] - 2* wall, center=true, $fn=4);
 }
@@ -116,7 +121,11 @@ module tabs( expand = false)
 
 module top()
 {
-    enclosure_hull( false);
+    difference()
+    {
+        enclosure_hull( false);
+        brand();
+    }
     tabs();
 }
 
@@ -141,6 +150,12 @@ module screw_tower()
     }
 }
 
+module brand()
+{
+    translate([0,0,outer_dims[2]/2 - wall/2])
+    linear_extrude( wall) text( "Partem", halign="center", valign="center");
+}
+
 module towers() {
     tenth = 2.54; // one tenth of an inch
     for (x = [-4,4]) for ( y = [0,10])
@@ -148,7 +163,6 @@ module towers() {
 }
 
 
-//top();
-bottom();
-
+rotate ([0,180,0]) top();
+//bottom();
 
