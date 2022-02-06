@@ -23,7 +23,7 @@ namespace {
 	constexpr auto switch2 = D2;
 	
 	IPAddress ip{ 192, 168, 4, 1};
-	IPAddress subnet{ 255, 255, 255, 240};
+	IPAddress subnet{ 255, 255, 255, 0};
 
 	constexpr auto baudRate = 9600;
 	constexpr auto bufferSize = 4096;
